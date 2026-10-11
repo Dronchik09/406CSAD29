@@ -17,6 +17,7 @@ jobs:
     name: Build and test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os:
           - ubuntu-latest
@@ -34,13 +35,12 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Make CI script executable
-        if: runner.os != 'Windows'
-        run: chmod +x ci.sh
-
       - name: Build and test on Linux and macOS
         if: runner.os != 'Windows'
-        run: ./ci.sh
+        run: |
+          sed -i -e 's/\r$//' ci.sh
+          chmod +x ci.sh
+          bash ci.sh
 
       - name: Build and test on Windows
         if: runner.os == 'Windows'

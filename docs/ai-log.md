@@ -12,6 +12,7 @@ recorded in the journal table and activity record.
 
 | Step / Prompt ID | Exact Prompt Sent | Summary of Copilot Output / Actions | Files Generated or Modified | Verification Status (Passed/Failed) | Encountered Errors & Resolution Notes |
 |---|---|---|---|---|---|
+| 7 / P-006 | [Verbatim prompt](#p-006--fix-linux-ci-crlf-and-matrix-fail-fast) | Updated the CI matrix to keep other OS jobs running after a failure; changed the Linux/macOS step to strip CRLF, set executable mode, and explicitly run the POSIX script with Bash. Rewrote `ci.sh` using strict POSIX shell syntax. | `.github/workflows/ci.yml`; `ci.sh`; `docs/ai-log.md` | Passed — static workflow requirement checks passed; `ci.sh` has no CRLF/bare CR bytes and `sh -n ci.sh` passed. No YAML validator was available; Maven and remote Actions execution were not run. | Error: "CI Build failed on ubuntu-latest within 3 seconds due to CRLF carriage return in ci.sh and fail-fast termination." Resolution: "Configured 'fail-fast: false', added sed stripping of CRLF characters, and explicitly invoked bash in ci.yml." |
 | 6 / P-005 | [Verbatim prompt](#p-005--create-cross-platform-ci-workflow) | Inspected existing `ci.sh` and `ci.bat` and confirmed `.github/workflows/` was absent. Created the requested Java 17 cross-platform GitHub Actions workflow for Linux, Windows, and macOS without inline Maven commands. | `.github/workflows/ci.yml`; `docs/ai-log.md` | Passed — workflow content and target file existence reviewed. Maven execution and external workflow/YAML validation were not run; Maven is unavailable in the workspace. | No existing workflow required merging. Existing runner scripts were inspected and preserved. Workflow was statically reviewed; no remote Actions run was triggered. |
 | 1 / P-001 | [Verbatim prompt](#p-001--strict-audit-journal-and-documentation-request) | Inspected the current workspace, noted the existing README, and regenerated this journal with the historical and current prompts plus diagnostic notes. Rewrote the architecture document and manifest to spell out orchestration gates, preservation rules, and `target/` handling. Progress updates disclosed the missing files, README preservation, and validation scope. | `docs/ai-log.md`; `docs/architecture.md`; `.github/agents/build-engineer.agent.md` | Passed — requested files and content reviewed after creation. Build/test/CI were not run because no Maven project is present. | Initial reads confirmed README content `123`; the three requested paths were absent. `git status --short` returned no entries. Final `git status --short` listed only the requested `.github/` and `docs/` directories as untracked. Preserved README unchanged; did not run build commands. |
 | 2 / P-000 | [Verbatim prompt](#p-000--earlier-file-generation-request) | Created an initial interaction log, architecture overview, and `build-engineer` manifest; reviewed the files and reported that build/test/CI could not run because no Maven project existed. | `docs/ai-log.md`; `docs/architecture.md`; `.github/agents/build-engineer.agent.md` | Passed — files were created and reviewed in that earlier interaction. | Earlier inspection found only `.git/`; `git log -1` reported that `main` had no commits. Build/test/CI were not applicable because there was no Java/Maven project. At the start of this regeneration, the three files were absent; their disappearance is not attributed to a cause. |
@@ -37,6 +38,29 @@ Act strictly as the AI build-engineer agent. Read .github/prompts/init.prompt.md
 </pre>
 
 ## Prompt register
+
+### P-006 — Fix Linux CI CRLF and matrix fail-fast
+
+<pre>
+Our GitHub Actions pipeline failed on ubuntu-latest and cancelled other OS runners with an early execution error caused by CRLF line endings in ci.sh and fail-fast matrix behavior.
+
+Please apply the following fixes:
+
+1. Update .github/workflows/ci.yml:
+   - In the build matrix strategy, add: `fail-fast: false`.
+   - In the step for Linux/macOS runners (runner.os != 'Windows'), sanitize CRLF line endings before executing ci.sh:
+     run: |
+       sed -i -e 's/\r$//' ci.sh
+       chmod +x ci.sh
+       bash ci.sh
+   - Keep Windows runner executing `ci.bat` via cmd.
+
+2. Ensure ci.sh has strict POSIX syntax with LF formatting.
+
+3. Provide the exact Markdown table row to append to docs/ai-log.md documenting:
+   - Error: "CI Build failed on ubuntu-latest within 3 seconds due to CRLF carriage return in ci.sh and fail-fast termination."
+   - Resolution: "Configured 'fail-fast: false', added sed stripping of CRLF characters, and explicitly invoked bash in ci.yml."
+</pre>
 
 ### P-005 — Create cross-platform CI workflow
 
@@ -160,6 +184,9 @@ Ensure each prompt is idempotent (safe to re-run). Also, provide the correspondi
 | D-011 | Inspected `ci.sh`, `ci.bat`, `.github/workflows/`, and repository status before workflow generation. | Runner scripts already invoke `mvn clean test package`; workflow directory did not exist. Maven remains unavailable. | Preserved both scripts and created the requested workflow directory/file. |
 | A-007 | Added `.github/workflows/ci.yml` and journaled this prompt. | Workflow configures `CI Build and Test`, push/PR filters for `develop`, `master`, and `main`, the three requested OS matrix values, checkout/setup-java v4, conditional script execution, and no inline Maven invocation. | `.github/workflows/ci.yml`; `docs/ai-log.md`. |
 | D-012 | Reviewed workflow text, script integration, generated file path, and Git status. | Workflow exists at the requested path; existing `ci.sh` and `ci.bat` invoke `mvn clean test package`. | Static content review completed. No YAML/Actions validator, local Maven command, or remote workflow run was performed. |
+| D-013 | Inspected the CI workflow, `ci.sh` bytes, and working-tree state after the reported failure. | Confirmed the requested `ci.sh` contained a CRLF line ending and the workflow had no `fail-fast: false`; Windows step used `shell: cmd`. | Identified the two requested corrections without changing the Windows runner. |
+| A-008 | Updated the matrix and Linux/macOS run step; rewrote `ci.sh` with `/bin/sh`, `set -eu`, and `exec` while retaining the same Maven goals. | The workflow now sanitizes CRLF before chmod and `bash ci.sh`; matrix failures no longer cancel peer jobs. | Modified `.github/workflows/ci.yml` and `ci.sh`; appended P-006 record here. |
+| D-014 | Checked `ci.sh` bytes, required workflow directives, POSIX syntax with `C:\Program Files\Git\bin\sh.exe -n ci.sh`, YAML validator availability, and Git status. | `ci.sh` is 46 bytes with zero CRLF pairs or bare CR bytes; `sh -n ci.sh` exited 0. Static checks confirmed `fail-fast: false`, requested CRLF sanitation and Bash invocation, Windows `cmd` step, and no inline Maven command. No `actionlint` or `yamllint` command was available. | Shell and static workflow checks passed. Maven execution and remote Actions run were not performed; workflow YAML was not independently parsed by a dedicated validator. |
 
 ## Verification summary
 
