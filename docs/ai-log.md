@@ -15,6 +15,7 @@ recorded in the journal table and activity record.
 | 1 / P-001 | [Verbatim prompt](#p-001--strict-audit-journal-and-documentation-request) | Inspected the current workspace, noted the existing README, and regenerated this journal with the historical and current prompts plus diagnostic notes. Rewrote the architecture document and manifest to spell out orchestration gates, preservation rules, and `target/` handling. Progress updates disclosed the missing files, README preservation, and validation scope. | `docs/ai-log.md`; `docs/architecture.md`; `.github/agents/build-engineer.agent.md` | Passed — requested files and content reviewed after creation. Build/test/CI were not run because no Maven project is present. | Initial reads confirmed README content `123`; the three requested paths were absent. `git status --short` returned no entries. Final `git status --short` listed only the requested `.github/` and `docs/` directories as untracked. Preserved README unchanged; did not run build commands. |
 | 2 / P-000 | [Verbatim prompt](#p-000--earlier-file-generation-request) | Created an initial interaction log, architecture overview, and `build-engineer` manifest; reviewed the files and reported that build/test/CI could not run because no Maven project existed. | `docs/ai-log.md`; `docs/architecture.md`; `.github/agents/build-engineer.agent.md` | Passed — files were created and reviewed in that earlier interaction. | Earlier inspection found only `.git/`; `git log -1` reported that `main` had no commits. Build/test/CI were not applicable because there was no Java/Maven project. At the start of this regeneration, the three files were absent; their disappearance is not attributed to a cause. |
 | 3 / P-002 | [Verbatim prompt](#p-002--three-agent-skill-specifications) | Inspected customization skill conventions and the workspace; created complete `project-scaffold`, `build-and-test`, and `github-actions` skill specifications; appended the prompt and activity record to this journal. | `.github/skills/project-scaffold/SKILL.md`; `.github/skills/build-and-test/SKILL.md`; `.github/skills/github-actions/SKILL.md`; `docs/ai-log.md` | Passed — all three skill files and this journal entry were reviewed; no Java/Maven tests or workflow execution were applicable or run. | Initial inspection found no pre-existing files under `.github/skills/`; no conflicting skill files required resolution. Maven build, tests, workflow execution, and external YAML/Actions validation were not performed because this workspace has no Maven project/workflow or validator invocation. |
+| 4 / P-003 | [Verbatim prompt](#p-003--six-build-engineer-command-prompts) | Read the prompt-file format, inspected the workspace and Git status, generated six idempotent command prompts, and recorded the request and diagnostics in this journal. | `.github/prompts/git-init.prompt.md`; `.github/prompts/create-project.prompt.md`; `.github/prompts/create-build.prompt.md`; `.github/prompts/create-actions.prompt.md`; `.github/prompts/check.prompt.md`; `.github/prompts/init.prompt.md`; `docs/ai-log.md` | Passed — all six prompt files and the journal record were reviewed. Maven tests and workflow validation were not run; this workspace contains no Maven project or workflow. | No existing prompt files or prompt-name collisions were found. Git status was clean before file generation. |
 
 ## Prompt register
 
@@ -80,6 +81,21 @@ Generate the full specifications for all three required agent skills under .gith
 Also, provide the exact row to append to docs/ai-log.md to document this step.
 </pre>
 
+### P-003 — Six build engineer command prompts
+
+<pre>
+Generate all 6 command prompts in .github/prompts/ for our Java build engineer agent:
+
+1. git-init.prompt.md - Verifies Git status and ensures .gitignore covers Java/Maven build output.
+2. create-project.prompt.md - Executes project-scaffold skill to generate directory structures and App.java.
+3. create-build.prompt.md - Executes build-and-test skill to create pom.xml and AppTest.java.
+4. create-actions.prompt.md - Executes github-actions skill to produce ci.yml, ci.sh, and ci.bat.
+5. check.prompt.md - Non-destructive inspection command that checks folder hierarchy, pom.xml integrity, and executes `mvn test` without modifying existing code.
+6. init.prompt.md - The orchestrator command executing sequentially: git-init -> create-project -> create-build -> create-actions -> check. It must immediately halt upon any step failure and provide actionable diagnostics.
+
+Ensure each prompt is idempotent (safe to re-run). Also, provide the corresponding log entry for docs/ai-log.md.
+</pre>
+
 ## Activity and diagnostic record
 
 | Activity ID | Action / Diagnostic | Observed Result | Resolution / Impact |
@@ -93,10 +109,13 @@ Also, provide the exact row to append to docs/ai-log.md to document this step.
 | D-005 | Inspected `.github/skills/` and read the agent-skills format reference before creating the skill files. | No existing skill files were present under `.github/skills/`; the reference specifies `.github/skills/<name>/SKILL.md` and required `name`/`description` frontmatter. | Followed the required directory/name convention; no existing content needed to be merged. |
 | A-003 | Created the three skill specifications and appended the P-002 journal entry. | Specifications document workflow, inputs, outputs, validations, error handling, and safe file operations. | Files created: `.github/skills/project-scaffold/SKILL.md`, `.github/skills/build-and-test/SKILL.md`, `.github/skills/github-actions/SKILL.md`; journal modified. |
 | D-006 | Final content and path review of all three skill files and `docs/ai-log.md`; checked repository status. | All requested skill files and journal record were present and readable. | Documentation review passed. No Maven build, test, Actions run, or external YAML/Actions schema validation was run. |
+| D-007 | Inspected the prompt-file format reference, enumerated repository and `.github/` files, and ran `git status --short`. | Prompt files use `.github/prompts/*.prompt.md`, support `agent` frontmatter, and the repository had no existing prompt files; Git status was clean before generation. | Selected workspace prompts targeting the `build-engineer` agent and proceeded without overwriting existing prompt files. |
+| A-004 | Created six command prompt files and appended the P-003 entry and verbatim request to this journal. | Prompts cover Git ignore/status checks, scaffold, Maven/JUnit build, CI scripts/workflow, read-only check, and fail-fast orchestration; each documents repeat-safe behavior. | Six `.github/prompts/*.prompt.md` files and `docs/ai-log.md` changed. |
+| D-008 | Reviewed all six prompt files and the updated journal; ran `git status --short` and listed the generated paths. | Six requested prompt files were present and readable; Git status showed only `.github/` and `docs/` content as untracked/changed. | File/content verification passed. Maven tests and workflow validators were not run because no Maven project or CI workflow exists. |
 
 ## Verification summary
 
-- **Documentation and manifest review:** Passed for the current generated files.
+- **Documentation, skill, and prompt review:** Passed for the current generated files.
 - **Agent YAML frontmatter:** Reviewed for the required metadata and valid
   delimiter structure; no external schema validator was run.
 - **Java/Maven build, JUnit tests, and GitHub Actions:** Not run. The current
