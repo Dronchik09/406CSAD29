@@ -12,12 +12,53 @@ recorded in the journal table and activity record.
 
 | Step / Prompt ID | Exact Prompt Sent | Summary of Copilot Output / Actions | Files Generated or Modified | Verification Status (Passed/Failed) | Encountered Errors & Resolution Notes |
 |---|---|---|---|---|---|
+| 6 / P-005 | [Verbatim prompt](#p-005--create-cross-platform-ci-workflow) | Inspected existing `ci.sh` and `ci.bat` and confirmed `.github/workflows/` was absent. Created the requested Java 17 cross-platform GitHub Actions workflow for Linux, Windows, and macOS without inline Maven commands. | `.github/workflows/ci.yml`; `docs/ai-log.md` | Passed — workflow content and target file existence reviewed. Maven execution and external workflow/YAML validation were not run; Maven is unavailable in the workspace. | No existing workflow required merging. Existing runner scripts were inspected and preserved. Workflow was statically reviewed; no remote Actions run was triggered. |
 | 1 / P-001 | [Verbatim prompt](#p-001--strict-audit-journal-and-documentation-request) | Inspected the current workspace, noted the existing README, and regenerated this journal with the historical and current prompts plus diagnostic notes. Rewrote the architecture document and manifest to spell out orchestration gates, preservation rules, and `target/` handling. Progress updates disclosed the missing files, README preservation, and validation scope. | `docs/ai-log.md`; `docs/architecture.md`; `.github/agents/build-engineer.agent.md` | Passed — requested files and content reviewed after creation. Build/test/CI were not run because no Maven project is present. | Initial reads confirmed README content `123`; the three requested paths were absent. `git status --short` returned no entries. Final `git status --short` listed only the requested `.github/` and `docs/` directories as untracked. Preserved README unchanged; did not run build commands. |
 | 2 / P-000 | [Verbatim prompt](#p-000--earlier-file-generation-request) | Created an initial interaction log, architecture overview, and `build-engineer` manifest; reviewed the files and reported that build/test/CI could not run because no Maven project existed. | `docs/ai-log.md`; `docs/architecture.md`; `.github/agents/build-engineer.agent.md` | Passed — files were created and reviewed in that earlier interaction. | Earlier inspection found only `.git/`; `git log -1` reported that `main` had no commits. Build/test/CI were not applicable because there was no Java/Maven project. At the start of this regeneration, the three files were absent; their disappearance is not attributed to a cause. |
 | 3 / P-002 | [Verbatim prompt](#p-002--three-agent-skill-specifications) | Inspected customization skill conventions and the workspace; created complete `project-scaffold`, `build-and-test`, and `github-actions` skill specifications; appended the prompt and activity record to this journal. | `.github/skills/project-scaffold/SKILL.md`; `.github/skills/build-and-test/SKILL.md`; `.github/skills/github-actions/SKILL.md`; `docs/ai-log.md` | Passed — all three skill files and this journal entry were reviewed; no Java/Maven tests or workflow execution were applicable or run. | Initial inspection found no pre-existing files under `.github/skills/`; no conflicting skill files required resolution. Maven build, tests, workflow execution, and external YAML/Actions validation were not performed because this workspace has no Maven project/workflow or validator invocation. |
 | 4 / P-003 | [Verbatim prompt](#p-003--six-build-engineer-command-prompts) | Read the prompt-file format, inspected the workspace and Git status, generated six idempotent command prompts, and recorded the request and diagnostics in this journal. | `.github/prompts/git-init.prompt.md`; `.github/prompts/create-project.prompt.md`; `.github/prompts/create-build.prompt.md`; `.github/prompts/create-actions.prompt.md`; `.github/prompts/check.prompt.md`; `.github/prompts/init.prompt.md`; `docs/ai-log.md` | Passed — all six prompt files and the journal record were reviewed. Maven tests and workflow validation were not run; this workspace contains no Maven project or workflow. | No existing prompt files or prompt-name collisions were found. Git status was clean before file generation. |
+| 5 / P-004 | [Verbatim prompt](#p-004--execute-init-and-generate-variant-5-project) | Read and followed `init.prompt.md` in order. `git-init` added Java/Maven ignore rules; `create-project` created the source scaffold; `create-build` generated Java 17/JUnit 5 Maven configuration and tests. The required `mvn test` command could not run, so the orchestrator halted before `create-actions` and `check`. | `.gitignore`; `src/main/java/com/example/App.java`; `src/test/java/com/example/AppTest.java`; `pom.xml`; `docs/ai-log.md`. Not generated because execution halted: `ci.sh`, `ci.bat`, `.github/workflows/ci.yml`, `docs/usage.md`. | Failed / blocked — `git-init` and source-level scaffold checks passed. `mvn test` failed to start (PowerShell exit code 1); Maven test result unavailable. `create-actions` and `check` were not run per fail-fast instructions. | `mvn` was not recognized and no Maven installation was found on PATH or checked standard locations; Java reports version 25 rather than the requested Java 17. Action: stopped the workflow at `create-build` after recording the blocker; install/configure Maven and Java 17, then rerun `init`. |
+
+### P-004 — Execute init and generate Variant 5 project
+
+<pre>
+Act strictly as the AI build-engineer agent. Read .github/prompts/init.prompt.md and execute the orchestration workflow end-to-end for our Variant 5 Java project:
+
+1. Generate the complete source code and configuration files:
+   - .gitignore
+   - pom.xml (configured for Java 17, maven-compiler-plugin, maven-surefire-plugin, JUnit 5)
+   - src/main/java/com/example/App.java (executable Hello World)
+   - src/test/java/com/example/AppTest.java (unit test verifying App functionality)
+   - ci.sh (POSIX shell script running mvn clean test package with executable permissions)
+   - ci.bat (Windows batch script running mvn clean test package)
+   - .github/workflows/ci.yml (multi-OS matrix workflow calling ci.sh on linux/macOS and ci.bat on windows)
+2. Generate docs/usage.md explaining how to trigger prompts, run local tests, and build artifacts.
+3. Provide the full log entry to append to docs/ai-log.md documenting the generated files and execution status.
+</pre>
 
 ## Prompt register
+
+### P-005 — Create cross-platform CI workflow
+
+<pre>
+Create the folder .github/workflows/ and generate the complete file .github/workflows/ci.yml for Laboratory Work #1 (Variant 5: Java 17, Maven, JUnit 5).
+
+Requirements for ci.yml:
+1. Workflow Name: "CI Build and Test"
+2. Trigger events: on 'push' and 'pull_request' to branches: develop, master, main.
+3. Multi-OS Matrix: Single job 'build' running across matrix strategy:
+   - ubuntu-latest
+   - windows-latest
+   - macos-latest
+4. Steps:
+   - Checkout code using actions/checkout@v4.
+   - Setup JDK using actions/setup-java@v4 (Java version 17, distribution 'temurin', cache: 'maven').
+   - On Linux and macOS runners (runner.os != 'Windows'): make 'ci.sh' executable (chmod +x) and execute './ci.sh'.
+   - On Windows runner (runner.os == 'Windows'): execute 'ci.bat' using shell: cmd.
+5. Do not inline Maven commands in the workflow; strictly delegate to ci.sh and ci.bat as required by the lab guidelines.
+
+Also provide the update line for docs/ai-log.md to document the generation of this workflow.
+</pre>
 
 ### P-001 — Initial request for this journal
 
@@ -112,12 +153,28 @@ Ensure each prompt is idempotent (safe to re-run). Also, provide the correspondi
 | D-007 | Inspected the prompt-file format reference, enumerated repository and `.github/` files, and ran `git status --short`. | Prompt files use `.github/prompts/*.prompt.md`, support `agent` frontmatter, and the repository had no existing prompt files; Git status was clean before generation. | Selected workspace prompts targeting the `build-engineer` agent and proceeded without overwriting existing prompt files. |
 | A-004 | Created six command prompt files and appended the P-003 entry and verbatim request to this journal. | Prompts cover Git ignore/status checks, scaffold, Maven/JUnit build, CI scripts/workflow, read-only check, and fail-fast orchestration; each documents repeat-safe behavior. | Six `.github/prompts/*.prompt.md` files and `docs/ai-log.md` changed. |
 | D-008 | Reviewed all six prompt files and the updated journal; ran `git status --short` and listed the generated paths. | Six requested prompt files were present and readable; Git status showed only `.github/` and `docs/` content as untracked/changed. | File/content verification passed. Maven tests and workflow validators were not run because no Maven project or CI workflow exists. |
+| D-009 | Read `.github/prompts/init.prompt.md` and its five step prompts; inspected Git status, repository files, Java/Maven availability, and project output paths before writing. | Initial branch was `feature/java-agent-project` with clean status; no Maven project, source tree, `.gitignore`, CI workflow, or scripts existed. Java 25 was available; `mvn` was not found on PATH or the checked standard locations. | Established initial state; preserved existing repository files and selected the prompt-specified `com.example` / Java 17 defaults. |
+| A-005 | Executed `git-init` and `create-project` sequentially. | Added `.gitignore`; `git check-ignore target/` exited 0. Created `App.java` and the test package directory; `java src/main/java/com/example/App.java` printed `Hello, World!` and exited 0. | `.gitignore`; `src/main/java/com/example/App.java`; created `src/test/java/com/example/` directory. |
+| A-006 | Executed `create-build`: created Java 17 Maven configuration with compiler/Surefire plugins and JUnit Jupiter dependency, plus two output/greeting tests; invoked required `mvn test`. | POM and tests were generated. PowerShell reported `mvn` was not recognized; command exit code was 1, so test count/result could not be produced. | `pom.xml`; `src/test/java/com/example/AppTest.java`. |
+| D-010 | Applied `init.prompt.md` fail-fast rule following the failed Maven test command. | `create-build` verification is blocked; downstream `create-actions` and `check` were not executed. | Halted before creating `ci.sh`, `ci.bat`, `.github/workflows/ci.yml`, and `docs/usage.md`. Actionable resolution: install/configure Maven and Java 17, then rerun `/init`. |
+| D-011 | Inspected `ci.sh`, `ci.bat`, `.github/workflows/`, and repository status before workflow generation. | Runner scripts already invoke `mvn clean test package`; workflow directory did not exist. Maven remains unavailable. | Preserved both scripts and created the requested workflow directory/file. |
+| A-007 | Added `.github/workflows/ci.yml` and journaled this prompt. | Workflow configures `CI Build and Test`, push/PR filters for `develop`, `master`, and `main`, the three requested OS matrix values, checkout/setup-java v4, conditional script execution, and no inline Maven invocation. | `.github/workflows/ci.yml`; `docs/ai-log.md`. |
+| D-012 | Reviewed workflow text, script integration, generated file path, and Git status. | Workflow exists at the requested path; existing `ci.sh` and `ci.bat` invoke `mvn clean test package`. | Static content review completed. No YAML/Actions validator, local Maven command, or remote workflow run was performed. |
 
 ## Verification summary
 
 - **Documentation, skill, and prompt review:** Passed for the current generated files.
 - **Agent YAML frontmatter:** Reviewed for the required metadata and valid
   delimiter structure; no external schema validator was run.
-- **Java/Maven build, JUnit tests, and GitHub Actions:** Not run. The current
-  workspace does not contain a Maven project or workflow to execute.
+- **Earlier Java/Maven build, JUnit tests, and GitHub Actions:** Not run during
+  the documentation-only generations because no Maven project or workflow
+  existed at that time.
 - **Existing README:** Preserved; no change was requested or made to it.
+- **Latest `/init` execution:** Scaffold and Maven files were generated, but
+  `mvn test` could not start because Maven is unavailable and the installed
+  Java runtime is version 25. Per the fail-fast orchestrator, downstream
+  `create-actions` and `check` were not run during that invocation.
+- **Workflow generated afterward:** `.github/workflows/ci.yml` now exists and
+  was statically reviewed. Maven tests, workflow validation, and remote Actions
+  execution remain unverified. Install/configure Maven and Java 17 before
+  claiming a passing build.
