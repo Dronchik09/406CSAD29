@@ -14,6 +14,7 @@ recorded in the journal table and activity record.
 |---|---|---|---|---|---|
 | 1 / P-001 | [Verbatim prompt](#p-001--strict-audit-journal-and-documentation-request) | Inspected the current workspace, noted the existing README, and regenerated this journal with the historical and current prompts plus diagnostic notes. Rewrote the architecture document and manifest to spell out orchestration gates, preservation rules, and `target/` handling. Progress updates disclosed the missing files, README preservation, and validation scope. | `docs/ai-log.md`; `docs/architecture.md`; `.github/agents/build-engineer.agent.md` | Passed — requested files and content reviewed after creation. Build/test/CI were not run because no Maven project is present. | Initial reads confirmed README content `123`; the three requested paths were absent. `git status --short` returned no entries. Final `git status --short` listed only the requested `.github/` and `docs/` directories as untracked. Preserved README unchanged; did not run build commands. |
 | 2 / P-000 | [Verbatim prompt](#p-000--earlier-file-generation-request) | Created an initial interaction log, architecture overview, and `build-engineer` manifest; reviewed the files and reported that build/test/CI could not run because no Maven project existed. | `docs/ai-log.md`; `docs/architecture.md`; `.github/agents/build-engineer.agent.md` | Passed — files were created and reviewed in that earlier interaction. | Earlier inspection found only `.git/`; `git log -1` reported that `main` had no commits. Build/test/CI were not applicable because there was no Java/Maven project. At the start of this regeneration, the three files were absent; their disappearance is not attributed to a cause. |
+| 3 / P-002 | [Verbatim prompt](#p-002--three-agent-skill-specifications) | Inspected customization skill conventions and the workspace; created complete `project-scaffold`, `build-and-test`, and `github-actions` skill specifications; appended the prompt and activity record to this journal. | `.github/skills/project-scaffold/SKILL.md`; `.github/skills/build-and-test/SKILL.md`; `.github/skills/github-actions/SKILL.md`; `docs/ai-log.md` | Passed — all three skill files and this journal entry were reviewed; no Java/Maven tests or workflow execution were applicable or run. | Initial inspection found no pre-existing files under `.github/skills/`; no conflicting skill files required resolution. Maven build, tests, workflow execution, and external YAML/Actions validation were not performed because this workspace has no Maven project/workflow or validator invocation. |
 
 ## Prompt register
 
@@ -55,6 +56,30 @@ Please generate the following 3 files:
 3. .github/agents/build-engineer.agent.md - The agent manifest defining the "build-engineer" role, responsibilities for Java/Maven/JUnit projects, file-handling rules, prohibited dangerous operations (no hard resets, no secret exposure), and completion criteria.
 </pre>
 
+### P-002 — Three agent skill specifications
+
+<pre>
+Generate the full specifications for all three required agent skills under .github/skills/ for our Java/Maven agent:
+
+1. .github/skills/project-scaffold/SKILL.md:
+   - Instructions to initialize the standard Maven folder layout (src/main/java/com/example, src/test/java/com/example).
+   - Scaffolds a basic App.java class outputting "Hello, World!".
+   - Provides .gitignore rules ignoring target/, .idea/, *.class, and OS metadata.
+   - Declares input parameters, expected output files, verification commands, and error handling.
+
+2. .github/skills/build-and-test/SKILL.md:
+   - Instructions to generate a clean pom.xml targeting Java 17 with maven-compiler-plugin, maven-surefire-plugin, and JUnit 5 (org.junit.jupiter:junit-jupiter).
+   - Generates AppTest.java with standard unit test cases.
+   - Declares preconditions, inputs, outputs, verification command (mvn test), and error recovery steps.
+
+3. .github/skills/github-actions/SKILL.md:
+   - Instructions to configure cross-platform CI matrix testing on ubuntu-latest, windows-latest, and macos-latest triggered on push/PR to develop and master.
+   - Enforces using decoupled runner scripts (ci.sh, ci.bat) rather than monolithic inline workflow shell commands.
+   - Declares validation steps and failure reporting.
+
+Also, provide the exact row to append to docs/ai-log.md to document this step.
+</pre>
+
 ## Activity and diagnostic record
 
 | Activity ID | Action / Diagnostic | Observed Result | Resolution / Impact |
@@ -65,6 +90,9 @@ Please generate the following 3 files:
 | A-002 | Recreated and reviewed the three requested files. | Journal contains both user prompts verbatim and diagnostic history; architecture and manifest include the requested workflow and boundaries. | Documentation review passed. Maven build, tests, and CI remain unverified because no `pom.xml` or application source was present. |
 | D-003 | Reviewed all three generated files and ran `git status --short; Get-ChildItem -Recurse -File docs,.github\agents \| Select-Object FullName,Length`. | All three requested files were present: `docs/ai-log.md` (6679 bytes), `docs/architecture.md` (7696 bytes), and `.github/agents/build-engineer.agent.md` (4374 bytes). Git status showed only `.github/` and `docs/` untracked. | Confirmed output paths and scope. This was a file/content review, not a build, test, CI run, or external YAML schema validation. |
 | D-004 | Rechecked with `git status --short; Get-ChildItem -File docs\ai-log.md,docs\architecture.md,.github\agents\build-engineer.agent.md \| Select-Object FullName,Length`. | All three files remained present; latest observed sizes were `docs/ai-log.md` 7386 bytes, `docs/architecture.md` 7696 bytes, and `.github/agents/build-engineer.agent.md` 4374 bytes. Git status showed only `.github/` and `docs/` untracked. | Final path/status check passed. Subsequent edits to this journal reordered its prompt register so the current request is its first entry; no project build/tests were run. |
+| D-005 | Inspected `.github/skills/` and read the agent-skills format reference before creating the skill files. | No existing skill files were present under `.github/skills/`; the reference specifies `.github/skills/<name>/SKILL.md` and required `name`/`description` frontmatter. | Followed the required directory/name convention; no existing content needed to be merged. |
+| A-003 | Created the three skill specifications and appended the P-002 journal entry. | Specifications document workflow, inputs, outputs, validations, error handling, and safe file operations. | Files created: `.github/skills/project-scaffold/SKILL.md`, `.github/skills/build-and-test/SKILL.md`, `.github/skills/github-actions/SKILL.md`; journal modified. |
+| D-006 | Final content and path review of all three skill files and `docs/ai-log.md`; checked repository status. | All requested skill files and journal record were present and readable. | Documentation review passed. No Maven build, test, Actions run, or external YAML/Actions schema validation was run. |
 
 ## Verification summary
 
